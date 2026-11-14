@@ -61,8 +61,15 @@ function revealElement(el, { delay = 0, y = 24, from = 'auto' } = {}) {
     gsap.set(el, { opacity: 0 });
     const trigger = ScrollTrigger.create({
       trigger: el,
-      // clamp: peças no fim da página (rodapé) ainda disparam no scroll máximo
-      start: 'clamp(top 88%)',
+      // Posição de scroll em que o topo da peça chega a 88% da tela. Fica
+      // negativa para o que já está na primeira tela (dispara de imediato, mesmo
+      // com o scroll em 0) e é limitada ao scroll máximo, para as peças do fim
+      // da página (rodapé) ainda dispararem.
+      start: () =>
+        Math.min(
+          el.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.88,
+          ScrollTrigger.maxScroll(window) - 1
+        ),
       once: true,
       onEnter: () => {
         job = carry(el, { delay });
