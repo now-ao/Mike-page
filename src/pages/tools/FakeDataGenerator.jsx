@@ -3,6 +3,7 @@ import { ArrowsClockwise, Check, Copy, Envelope, IdentificationCard, MapPin, Pho
 import Card from '../../components/site/GlassCard';
 import { Button } from '@/components/ui/button';
 import PageHeader from '../../components/site/PageHeader';
+import { RevealGroup } from '../../components/site/Reveal';
 import Seo from '../../components/Seo';
 import { toolSchema } from '../../utils/seo';
 import { generateFakePerson } from '../../utils/generators';
@@ -66,7 +67,7 @@ Nascimento: ${data.birthDate}`;
   };
 
   return (
-    <div className="stagger-in max-w-3xl pt-36 md:pt-44">
+    <RevealGroup className="max-w-3xl pt-36 md:pt-44">
       <Seo
         title="Gerador de Dados Fake Online e Grátis · Vinnicius Santos"
         description="Gere personas completas para testes: nome, e-mail, CPF, telefone e endereço, direto no navegador e sem cadastro."
@@ -178,6 +179,6 @@ Nascimento: ${data.birthDate}`;
           </li>
         </ul>
       </Card>
-    </div>
+    </RevealGroup>
   );
 }

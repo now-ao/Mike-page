@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/command';
 import { emit, on } from '@/lib/events';
 import { downloadResume, openExternal, GITHUB, LINKEDIN } from '@/lib/actions';
+import { scrollToElement } from '@/lib/scroll';
 import { paletteContent } from '../../content/terminal';
 import { toolsPt, toolsEn } from '../../content/tools';
 import { useLocale, getLocalizedPath } from '../../hooks/useLocale';
@@ -75,7 +76,7 @@ export default function CommandPalette({ defaultOpen = false }) {
     if (pathname !== home) navigate(home);
     // espera a home montar o console antes de pedir a aba do terminal
     setTimeout(() => {
-      document.getElementById('console')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      scrollToElement(document.getElementById('console'), { center: true });
       emit('terminal:open');
     }, pathname === home ? 0 : 400);
   };

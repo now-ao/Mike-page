@@ -4,6 +4,7 @@ import Card from '../../components/site/GlassCard';
 import Input from '../../components/site/Field';
 import { Button } from '@/components/ui/button';
 import PageHeader from '../../components/site/PageHeader';
+import { RevealGroup } from '../../components/site/Reveal';
 import Seo from '../../components/Seo';
 import { toolSchema } from '../../utils/seo';
 import { fetchCEP } from '../../utils/api';
@@ -51,7 +52,7 @@ export default function CEPFinder() {
   };
 
   return (
-    <div className="stagger-in max-w-3xl pt-36 md:pt-44">
+    <RevealGroup className="max-w-3xl pt-36 md:pt-44">
       <Seo
         title="Buscador de CEP Online e Grátis · Vinnicius Santos"
         description="Encontre o endereço completo a partir de um CEP usando a API ViaCEP, direto no navegador e sem cadastro."
@@ -176,6 +177,6 @@ export default function CEPFinder() {
           </li>
         </ul>
       </Card>
-    </div>
+    </RevealGroup>
   );
 }

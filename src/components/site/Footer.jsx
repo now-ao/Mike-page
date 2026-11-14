@@ -52,14 +52,15 @@ export default function Footer() {
           </a>
         </Reveal>
 
-        <p
+        <Reveal
+          as="p"
           aria-hidden="true"
           className="mt-16 text-[clamp(3.2rem,13.5vw,13rem)] leading-[0.82] font-black tracking-[-0.055em] text-white/[0.06] select-none md:mt-24"
         >
           Vinnicius Santos
-        </p>
+        </Reveal>
 
-        <div className="mt-8 flex flex-col gap-6 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
+        <Reveal className="mt-8 flex flex-col gap-6 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
           <nav aria-label={t.navLabel} className="flex flex-wrap items-center gap-x-6 gap-y-2">
             <Link to={en ? '/en/projects' : '/projects'} className="hover:text-foreground">
               {t.links.projects}
@@ -85,7 +86,7 @@ export default function Footer() {
             </p>
             <p className="text-muted-foreground/80">{t.built}</p>
           </div>
-        </div>
+        </Reveal>
 
         <StatusBar locale={locale} />
       </div>

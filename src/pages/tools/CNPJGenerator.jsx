@@ -4,6 +4,7 @@ import Card from '../../components/site/GlassCard';
 import Input from '../../components/site/Field';
 import { Button } from '@/components/ui/button';
 import PageHeader from '../../components/site/PageHeader';
+import { RevealGroup } from '../../components/site/Reveal';
 import Seo from '../../components/Seo';
 import { toolSchema } from '../../utils/seo';
 import { generateCNPJ } from '../../utils/generators';
@@ -42,7 +43,7 @@ export default function CNPJGenerator() {
   };
 
   return (
-    <div className="stagger-in max-w-3xl pt-36 md:pt-44">
+    <RevealGroup className="max-w-3xl pt-36 md:pt-44">
       <Seo
         title="Gerador e Validador de CNPJ Online e Grátis · Vinnicius Santos"
         description="Gere CNPJs válidos para testes ou valide um CNPJ existente usando o algoritmo oficial da Receita Federal, direto no navegador."
@@ -172,6 +173,6 @@ export default function CNPJGenerator() {
           </li>
         </ul>
       </Card>
-    </div>
+    </RevealGroup>
   );
 }

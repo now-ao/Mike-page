@@ -5,7 +5,8 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  // src/components/reactbits é código baixado do registro do React Bits (vendorizado)
+  globalIgnores(['dist', 'src/components/reactbits']),
   {
     files: ['**/*.{js,jsx}'],
     ignores: ['vite.config.js'],

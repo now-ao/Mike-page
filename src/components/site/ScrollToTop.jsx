@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { scrollToTop, scrollToElement } from '@/lib/scroll';
 
 /**
  * Garante que cada troca de rota leve o usuário ao topo da página.
@@ -14,20 +15,20 @@ export default function ScrollToTop() {
 
   useEffect(() => {
     if (!hash) {
-      window.scrollTo({ top: 0, behavior: 'instant' });
+      scrollToTop();
       return undefined;
     }
 
     const id = decodeURIComponent(hash.slice(1));
     const scrollToTarget = () => {
       const target = document.getElementById(id);
-      if (target) target.scrollIntoView({ behavior: 'instant', block: 'start' });
+      if (target) scrollToElement(target, { immediate: true });
       return Boolean(target);
     };
 
     if (scrollToTarget()) return undefined;
 
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    scrollToTop();
     const observer = new MutationObserver(() => {
       if (scrollToTarget()) observer.disconnect();
     });

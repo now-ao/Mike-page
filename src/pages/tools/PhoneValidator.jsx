@@ -4,6 +4,7 @@ import Card from '../../components/site/GlassCard';
 import Input from '../../components/site/Field';
 import { Button } from '@/components/ui/button';
 import PageHeader from '../../components/site/PageHeader';
+import { RevealGroup } from '../../components/site/Reveal';
 import Seo from '../../components/Seo';
 import { toolSchema } from '../../utils/seo';
 import { isValidPhone, formatPhone } from '../../utils/validators';
@@ -38,7 +39,7 @@ export default function PhoneValidator() {
   };
 
   return (
-    <div className="stagger-in max-w-3xl pt-36 md:pt-44">
+    <RevealGroup className="max-w-3xl pt-36 md:pt-44">
       <Seo
         title="Validador de Telefone Online e Grátis · Vinnicius Santos"
         description="Valide números de celular e telefone fixo do Brasil com formatação automática, direto no navegador."
@@ -140,6 +141,6 @@ export default function PhoneValidator() {
           </li>
         </ul>
       </Card>
-    </div>
+    </RevealGroup>
   );
 }

@@ -4,6 +4,7 @@ import Card from '../../components/site/GlassCard';
 import Input from '../../components/site/Field';
 import { Button } from '@/components/ui/button';
 import PageHeader from '../../components/site/PageHeader';
+import { RevealGroup } from '../../components/site/Reveal';
 import Seo from '../../components/Seo';
 import { toolSchema } from '../../utils/seo';
 import { isValidEmail } from '../../utils/validators';
@@ -32,7 +33,7 @@ export default function EmailValidator() {
   };
 
   return (
-    <div className="stagger-in max-w-3xl pt-36 md:pt-44">
+    <RevealGroup className="max-w-3xl pt-36 md:pt-44">
       <Seo
         title="Validador de E-mail Online e Grátis · Vinnicius Santos"
         description="Valide o formato e o domínio de qualquer e-mail gratuitamente, direto no navegador, sem enviar dados para servidores."
@@ -114,6 +115,6 @@ export default function EmailValidator() {
           </li>
         </ul>
       </Card>
-    </div>
+    </RevealGroup>
   );
 }

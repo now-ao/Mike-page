@@ -13,6 +13,12 @@ import {
 } from 'react-icons/si';
 import { TbBrandCSharp } from 'react-icons/tb';
 import { FaAws } from 'react-icons/fa';
+import { useRef } from 'react';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useGSAP } from '@gsap/react';
+
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 // Logos reais das marcas (react-icons/si), só logo e nome, sem rótulo de categoria.
 const STACK = [
@@ -48,9 +54,45 @@ function Row({ hidden = false }) {
 }
 
 export default function StackMarquee({ label }) {
+  const track = useRef(null);
+
+  // A esteira responde à rolagem: acelera com a velocidade do scroll (e inverte
+  // ao rolar para cima), depois volta sozinha ao ritmo normal. O movimento base
+  // continua sendo a animação CSS; aqui só muda a taxa de reprodução dela.
+  useGSAP(() => {
+    const mm = gsap.matchMedia();
+    mm.add('(prefers-reduced-motion: no-preference)', () => {
+      const animation = track.current.getAnimations()[0];
+      if (!animation) return;
+      const rate = { value: 1 };
+      const apply = () => {
+        animation.playbackRate = rate.value;
+      };
+      const trigger = ScrollTrigger.create({
+        trigger: track.current,
+        start: 'top bottom',
+        end: 'bottom top',
+        onUpdate: (self) => {
+          const boost = gsap.utils.clamp(-6, 6, self.getVelocity() / 350);
+          gsap.to(rate, {
+            value: Math.abs(boost) < 0.4 ? 1 : boost,
+            duration: 0.3,
+            overwrite: true,
+            onUpdate: apply,
+            onComplete: () => gsap.to(rate, { value: 1, duration: 1.2, ease: 'power2.out', onUpdate: apply }),
+          });
+        },
+      });
+      return () => {
+        trigger.kill();
+        animation.playbackRate = 1;
+      };
+    });
+  });
+
   return (
     <section aria-label={label} className="marquee overflow-hidden py-2">
-      <div className="marquee__track">
+      <div ref={track} className="marquee__track">
         <Row />
         <Row hidden />
       </div>

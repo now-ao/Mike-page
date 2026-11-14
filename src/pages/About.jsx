@@ -1,3 +1,7 @@
+import { useRef } from 'react';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useGSAP } from '@gsap/react';
 import { useLocation } from 'react-router-dom';
 import { DownloadSimple, GithubLogo, LinkedinLogo, MapPin, Phone } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
@@ -10,6 +14,8 @@ import { aboutPt } from '../content/about.pt';
 import { aboutEn } from '../content/about.en';
 import { personNode } from '../utils/seo';
 import { useLocale, getLocalizedPath } from '../hooks/useLocale';
+
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 const SITE_URL = 'https://vinnisantos.com.br';
 
@@ -178,6 +184,37 @@ export default function About() {
   const history = locale === 'en' ? historyEn : historyPt;
   const currentPath = locale === 'en' ? '/en/about' : '/about';
   const h = t.sectionHeadings;
+  const timelineRef = useRef(null);
+
+  // Linha do tempo: a linha azul acompanha a rolagem pela lista e cada ponto
+  // acende quando o item passa do meio da tela. Com movimento reduzido, a
+  // linha já aparece inteira e os pontos acesos.
+  useGSAP(
+    () => {
+      const items = gsap.utils.toArray('.timeline__item');
+      const mm = gsap.matchMedia();
+      mm.add('(prefers-reduced-motion: reduce)', () => {
+        gsap.set('[data-timeline-progress]', { scaleY: 1 });
+        items.forEach((item) => item.classList.add('is-reached'));
+      });
+      mm.add('(prefers-reduced-motion: no-preference)', () => {
+        gsap.to('[data-timeline-progress]', {
+          scaleY: 1,
+          ease: 'none',
+          scrollTrigger: { trigger: timelineRef.current, start: 'top 60%', end: 'bottom 60%', scrub: 0.4 },
+        });
+        items.forEach((item) => {
+          ScrollTrigger.create({
+            trigger: item,
+            start: 'top 60%',
+            onEnter: () => item.classList.add('is-reached'),
+            onLeaveBack: () => item.classList.remove('is-reached'),
+          });
+        });
+      });
+    },
+    { scope: timelineRef, dependencies: [locale], revertOnUpdate: true }
+  );
 
   return (
     <div className="pt-36 md:pt-44">
@@ -265,9 +302,17 @@ export default function About() {
           {/* Experiência: linha do tempo em vidro */}
           <section aria-labelledby="experience-heading">
             <SectionTitle id="experience-heading">{h.experience}</SectionTitle>
-            <ol className="mt-8 grid gap-4">
+            <ol ref={timelineRef} className="relative mt-8 grid gap-4 pl-8 md:pl-12">
+              {/* Trilho e linha de progresso (decorativos): a linha estica com a rolagem */}
+              <li aria-hidden="true" className="absolute top-2 bottom-2 left-[7px] w-px bg-white/10 md:left-[11px]">
+                <span data-timeline-progress className="block h-full w-full origin-top scale-y-0 bg-primary" />
+              </li>
               {t.experience.map((job) => (
-                <Reveal as="li" key={job.company}>
+                <Reveal as="li" key={job.company} className="timeline__item relative">
+                  <span
+                    aria-hidden="true"
+                    className="timeline__dot absolute top-8 -left-8 size-[15px] rounded-full border border-white/20 bg-background md:top-10 md:-left-12 md:ml-1"
+                  />
                   <GlassCard className="p-6 md:p-8">
                     <div className="flex flex-col gap-2 md:flex-row md:items-baseline md:justify-between md:gap-6">
                       <h3 className="text-2xl font-semibold tracking-tight">{job.company}</h3>

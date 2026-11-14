@@ -242,6 +242,7 @@ const Terminal = forwardRef(function Terminal({ locale, className }, ref) {
   return (
     <div
       ref={screenRef}
+      data-lenis-prevent
       onClick={() => inputRef.current?.focus({ preventScroll: true })}
       className={cn('h-full cursor-text overflow-y-auto px-5 py-4 font-mono text-[13.5px] leading-relaxed text-foreground/90', className)}
       role="log"

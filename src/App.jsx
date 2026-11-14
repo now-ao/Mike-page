@@ -4,6 +4,9 @@ import { LazyMotion, MotionConfig, domAnimation } from 'motion/react';
 import Navbar from './components/site/Navbar';
 import Footer from './components/site/Footer';
 import ScrollToTop from './components/site/ScrollToTop';
+import SmoothScroll from './components/site/SmoothScroll';
+import ScrollProgress from './components/site/ScrollProgress';
+import AssembleIntro from './components/site/AssembleIntro';
 import Backdrop from './components/site/Backdrop';
 import CommandPaletteHost from './components/site/CommandPaletteHost';
 import EasterEggs from './components/site/EasterEggs';
@@ -33,11 +36,15 @@ function App() {
           reducedMotion="user" faz toda animação respeitar a preferência do sistema. */}
       <LazyMotion features={domAnimation} strict>
         <MotionConfig reducedMotion="user">
+          <SmoothScroll />
           <ScrollToTop />
+          <ScrollProgress />
+          <AssembleIntro />
           <Backdrop />
           <CommandPaletteHost />
           <EasterEggs />
-          <div className="flex min-h-[100dvh] flex-col overflow-x-clip text-foreground">
+          {/* data-agent-stage: onde os cursores dos agentes são desenhados ao rolar (lib/agents.js) */}
+          <div data-agent-stage className="relative flex min-h-[100dvh] flex-col overflow-x-clip text-foreground">
             <Navbar />
 
             <main id="main-content" className="mx-auto w-full max-w-7xl flex-1 px-4 md:px-8">

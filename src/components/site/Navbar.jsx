@@ -117,6 +117,7 @@ export default function Navbar() {
   return (
     <header className="fixed inset-x-0 top-0 z-50 px-3 pt-3 md:px-6 md:pt-4">
       <nav
+        data-assemble-once
         aria-label={t.nav}
         className="glass-strong mx-auto flex h-14 max-w-5xl items-center justify-between rounded-full pr-2 pl-3 md:h-16 md:pr-3 md:pl-4"
       >

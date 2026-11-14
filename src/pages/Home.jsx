@@ -1,15 +1,20 @@
+import { useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { m, useReducedMotion } from 'motion/react';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useGSAP } from '@gsap/react';
 import { ArrowRight, ArrowUpRight, DownloadSimple } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { cn, slugify } from '@/lib/utils';
+import { slugify } from '@/lib/utils';
 import GlassCard from '../components/site/GlassCard';
 import Reveal from '../components/site/Reveal';
 import ScrambleText from '../components/site/ScrambleText';
 import HeroConsole from '../components/site/HeroConsole';
 import StackMarquee from '../components/site/StackMarquee';
 import LiveGenerator from '../components/site/LiveGenerator';
+import ScrollReveal from '../components/reactbits/ScrollReveal/ScrollReveal';
+import Magnet from '../components/reactbits/Magnet/Magnet';
 import Seo from '../components/Seo';
 import { itemListSchema, personNode, PERSON_ID } from '../utils/seo';
 import { projectsContent } from '../content/projects';
@@ -17,13 +22,12 @@ import { toolsPt, toolsEn } from '../content/tools';
 import { homeContent } from '../content/home';
 import { useLocale, getLocalizedPath } from '../hooks/useLocale';
 
-const SITE_URL = 'https://vinnisantos.com.br';
-const EASE = [0.16, 1, 0.3, 1];
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 
-// Projetos do bento: os que têm sistema público para mostrar em imagem.
+const SITE_URL = 'https://vinnisantos.com.br';
+
+// Projetos da pilha: os que têm sistema público para mostrar em imagem.
 const FEATURED = ['PendurAi', 'Life OS', 'Agenda Osvair'];
-// O card grande do bento é mais alto que 16:10; usa uma captura mais alta do mesmo sistema.
-const TALL_SHOTS = { PendurAi: { src: '/shots/pendurai-tall.webp', width: 1280, height: 1120 } };
 
 function homeSchema(locale, path, tools) {
   const toolList = itemListSchema({
@@ -55,26 +59,35 @@ function homeSchema(locale, path, tools) {
 }
 
 function Hero({ t, projectsHref, locale }) {
-  const reduce = useReducedMotion();
-  const enter = (delay) =>
-    reduce
-      ? {}
-      : {
-          initial: { opacity: 0, y: 24 },
-          animate: { opacity: 1, y: 0 },
-          transition: { duration: 0.8, delay, ease: EASE },
-        };
+  const heroRef = useRef(null);
 
+  // Saída do hero: enquanto a seção rola para fora, o texto sobe e apaga e o
+  // console afunda um pouco, em velocidades diferentes (profundidade).
+  useGSAP(
+    () => {
+      const mm = gsap.matchMedia();
+      mm.add('(prefers-reduced-motion: no-preference) and (min-width: 1024px)', () => {
+        const scrollTrigger = { trigger: heroRef.current, start: 'top top', end: 'bottom top', scrub: true };
+        gsap.to('[data-hero-copy]', { yPercent: -18, opacity: 0, ease: 'none', scrollTrigger });
+        gsap.to('[data-hero-console]', { yPercent: 10, scale: 0.92, opacity: 0.35, ease: 'none', scrollTrigger });
+      });
+    },
+    { scope: heroRef }
+  );
   return (
-    <section className="grid min-h-[100dvh] grid-cols-1 items-center gap-12 pt-28 pb-12 lg:grid-cols-12 lg:gap-10 lg:pt-24">
-      <div className="lg:col-span-6">
+    <section
+      ref={heroRef}
+      className="grid min-h-[100dvh] grid-cols-1 items-center gap-12 pt-28 pb-12 lg:grid-cols-12 lg:gap-10 lg:pt-24"
+    >
+      <div data-hero-copy className="lg:col-span-6">
         {/* O único rótulo do hero: um prompt de shell, o "comando" que gera o nome abaixo */}
-        <m.p {...enter(0)} className="mb-6 font-mono text-sm text-muted-foreground md:text-base">
+        {/* As peças do hero (data-assemble) são colocadas pelos cursores na abertura */}
+        <p data-assemble className="mb-6 font-mono text-sm text-muted-foreground md:text-base">
           <span className="text-[var(--syntax-string)]">~/vinnicius</span>
           <span className="text-primary"> $ </span>
           whoami
-        </m.p>
-        <h1 className="text-[clamp(3.4rem,7.2vw,6.6rem)] leading-[0.9] font-bold tracking-[-0.05em] text-foreground">
+        </p>
+        <h1 data-assemble className="text-[clamp(3.4rem,7.2vw,6.6rem)] leading-[0.9] font-bold tracking-[-0.05em] text-foreground">
           <ScrambleText text="Vinnicius" className="block" />
           <span className="flex items-end gap-[0.06em]">
             <ScrambleText text="Santos" startDelay={350} />
@@ -82,11 +95,11 @@ function Hero({ t, projectsHref, locale }) {
           </span>
         </h1>
 
-        <m.p {...enter(0.35)} className="mt-8 max-w-[34rem] text-lg leading-relaxed text-foreground/80 md:text-xl">
+        <p data-assemble className="mt-8 max-w-[34rem] text-lg leading-relaxed text-foreground/80 md:text-xl">
           {t.heroLead}
-        </m.p>
+        </p>
 
-        <m.div {...enter(0.45)} className="mt-10 flex flex-wrap gap-3">
+        <div data-assemble className="mt-10 flex flex-wrap gap-3">
           <Button asChild size="lg" className="group font-mono">
             <Link to={projectsHref}>
               <ScrambleText text={t.ctaProjects} trigger="hover" />
@@ -100,71 +113,71 @@ function Hero({ t, projectsHref, locale }) {
               <DownloadSimple className="transition-transform duration-300 group-hover:translate-y-0.5" weight="bold" aria-hidden="true" />
             </a>
           </Button>
-        </m.div>
+        </div>
       </div>
 
-      <m.div
-        id="console"
-        className="scroll-mt-28 lg:col-span-6"
-        initial={reduce ? false : { opacity: 0, y: 40, scale: 0.96, filter: 'blur(10px)' }}
-        animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
-        transition={{ duration: 1.1, delay: 0.25, ease: EASE }}
-      >
-        <HeroConsole locale={locale} />
-      </m.div>
+      <div id="console" data-assemble className="scroll-mt-28 lg:col-span-6">
+        {/* Camada própria para o parallax de saída: a de fora é a peça da abertura */}
+        <div data-hero-console className="origin-top">
+          <HeroConsole locale={locale} />
+        </div>
+      </div>
     </section>
   );
 }
 
-function ProjectTile({ project, href, t, large = false }) {
-  const shot = (large && TALL_SHOTS[project.name]) || { src: project.image, width: 1440, height: 900 };
+// Card da pilha de projetos: captura de um lado, decisões de arquitetura do outro.
+function ProjectCard({ project, href, t, index }) {
+  const shot = { src: project.image, width: 1440, height: 900 };
 
   return (
-    <Link
-      to={href}
-      className="group block h-full rounded-[var(--radius-panel)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-    >
-      <GlassCard spotlight className="flex h-full flex-col gap-6 p-3 md:p-3">
-        {/* No card grande, a captura cresce para ocupar a altura das duas linhas do bento */}
-        <div
-          className={cn(
-            'overflow-hidden rounded-[calc(var(--radius-panel)-8px)]',
-            large && 'lg:relative lg:min-h-[18rem] lg:flex-1'
-          )}
-        >
-          <img
-            src={shot.src}
-            alt={t.projectsShotAlt(project.name)}
-            width={shot.width}
-            height={shot.height}
-            loading="lazy"
-            decoding="async"
-            className={cn(
-              'aspect-[16/10] w-full object-cover object-top transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.03]',
-              large && 'lg:absolute lg:inset-0 lg:aspect-auto lg:h-full'
-            )}
-          />
-        </div>
-        <div className={cn('flex flex-col gap-3 px-3 pb-4 md:px-4', !large && 'flex-1')}>
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h3 className={large ? 'text-3xl font-semibold tracking-tight' : 'text-2xl font-semibold tracking-tight'}>
-              {project.name}
-            </h3>
-            <Badge variant="signal">{project.status}</Badge>
+    <article data-stack-card style={{ '--stack-index': index }} className="stack-card rounded-[var(--radius-panel)]">
+      {/* O Reveal fica por dentro: o <article> é grudado e escalado pelo GSAP da pilha */}
+      <Reveal>
+      <Link
+        to={href}
+        className="group block rounded-[var(--radius-panel)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+      >
+        <GlassCard spotlight className="grid grid-cols-1 gap-6 p-3 md:p-3 lg:grid-cols-12 lg:gap-8">
+          <div className="overflow-hidden rounded-[calc(var(--radius-panel)-8px)] lg:col-span-7">
+            {/* Camada do parallax (GSAP): separada da <img>, que tem transição de hover própria */}
+            <div data-parallax>
+              <img
+                src={shot.src}
+                alt={t.projectsShotAlt(project.name)}
+                width={shot.width}
+                height={shot.height}
+                loading="lazy"
+                decoding="async"
+                className="aspect-[16/10] w-full object-cover object-top transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.03]"
+              />
+            </div>
           </div>
-          <p className="text-base leading-relaxed text-muted-foreground">{project.kind}</p>
-          {large && (
-            <ul className="mt-2 grid gap-2 sm:grid-cols-2">
-              {project.decisions.slice(0, 4).map((decision) => (
+          <div className="flex flex-col gap-4 px-3 pb-4 lg:col-span-5 lg:justify-center lg:py-6 lg:pr-6 lg:pl-0">
+            <p className="font-mono text-sm text-muted-foreground tabular-nums">
+              <span className="text-primary">{String(index + 1).padStart(2, '0')}</span> / {project.stack[0]}
+            </p>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h3 className="text-3xl font-semibold tracking-tight md:text-4xl">{project.name}</h3>
+              <Badge variant="signal">{project.status}</Badge>
+            </div>
+            <p className="text-base leading-relaxed text-muted-foreground md:text-lg">{project.kind}</p>
+            <ul className="mt-1 grid gap-2">
+              {project.decisions.slice(0, 3).map((decision) => (
                 <li key={decision.title} className="glass-inset rounded-xl px-4 py-3 text-sm leading-snug text-foreground/90">
                   {decision.title}
                 </li>
               ))}
             </ul>
-          )}
-        </div>
-      </GlassCard>
-    </Link>
+            <span className="mt-2 inline-flex items-center gap-2 font-mono text-sm text-primary">
+              {t.ctaProjects}
+              <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" weight="bold" aria-hidden="true" />
+            </span>
+          </div>
+        </GlassCard>
+      </Link>
+      </Reveal>
+    </article>
   );
 }
 
@@ -175,8 +188,61 @@ export default function Home() {
   const tools = locale === 'en' ? toolsEn : toolsPt;
   const projectsHref = locale === 'en' ? '/en/projects' : '/projects';
   const allProjects = projectsContent[locale].projects;
-  const [lead, ...rest] = FEATURED.map((name) => allProjects.find((p) => p.name === name));
+  const featured = FEATURED.map((name) => allProjects.find((p) => p.name === name));
   const currentPath = locale === 'en' ? '/en' : '/';
+  const projectsRef = useRef(null);
+
+  // Parallax das capturas: cada uma desliza alguns % enquanto o card cruza a tela.
+  useGSAP(
+    () => {
+      const mm = gsap.matchMedia();
+      // Mesma condição do CSS que deixa os cards grudados (.stack-card).
+      mm.add('(prefers-reduced-motion: no-preference) and (min-width: 1024px) and (min-height: 760px)', () => {
+        // Pilha: enquanto o próximo card desliza por cima, o de baixo encolhe e
+        // escurece. As posições saem das alturas (e não do getBoundingClientRect
+        // de cada card) porque um card grudado (sticky) está fora do lugar natural.
+        const cards = gsap.utils.toArray('[data-stack-card]');
+        const stack = cards[0]?.parentElement;
+        const stickyTop = (card) => parseFloat(getComputedStyle(card).top) || 0;
+        const naturalTop = (index) => {
+          const gap = parseFloat(getComputedStyle(stack).rowGap) || 0;
+          const above = cards.slice(0, index).reduce((sum, card) => sum + card.offsetHeight + gap, 0);
+          return stack.getBoundingClientRect().top + window.scrollY + above;
+        };
+        cards.slice(0, -1).forEach((card, i) => {
+          // O brilho parte de um valor explícito: saindo de "none", o GSAP
+          // interpolaria a partir de brightness(0) e o card piscaria preto.
+          gsap.fromTo(card, { scale: 1, filter: 'brightness(1)' }, {
+            scale: 0.95 - (cards.length - 2 - i) * 0.02,
+            filter: 'brightness(0.7)',
+            ease: 'none',
+            scrollTrigger: {
+              start: () => naturalTop(i + 1) - (stickyTop(card) + card.offsetHeight),
+              end: () => naturalTop(i + 1) - stickyTop(cards[i + 1]),
+              scrub: true,
+              invalidateOnRefresh: true,
+            },
+          });
+        });
+      });
+
+      mm.add('(prefers-reduced-motion: no-preference)', () => {
+        gsap.utils.toArray('[data-parallax]').forEach((layer) => {
+          gsap.fromTo(
+            layer,
+            { yPercent: -4, scale: 1.1 },
+            {
+              yPercent: 4,
+              scale: 1.1,
+              ease: 'none',
+              scrollTrigger: { trigger: layer.parentElement, start: 'top bottom', end: 'bottom top', scrub: true },
+            }
+          );
+        });
+      });
+    },
+    { scope: projectsRef }
+  );
 
   return (
     <div>
@@ -196,31 +262,45 @@ export default function Home() {
       <Hero t={t} projectsHref={projectsHref} locale={locale} />
 
       {/* Stack: o único marquee da página */}
-      <div className="-mx-4 md:-mx-8">
+      <Reveal className="-mx-4 md:-mx-8">
         <StackMarquee label={t.stackLabel} />
-      </div>
+      </Reveal>
 
       {/* Projetos: bento com capturas reais */}
-      <section aria-labelledby="projects-heading" className="mt-32 md:mt-44">
+      <section ref={projectsRef} aria-labelledby="projects-heading" className="mt-32 md:mt-44">
+        {/* React Bits ScrollReveal: as palavras do título desfocam e acendem conforme a rolagem */}
         <Reveal>
-          <h2 id="projects-heading" className="max-w-3xl text-4xl leading-[1.02] font-bold tracking-[-0.035em] md:text-6xl">
-            {t.projectsTitle}
-          </h2>
+        <ScrollReveal
+          id="projects-heading"
+          baseRotation={0}
+          baseOpacity={0.15}
+          blurStrength={6}
+          wordAnimationEnd="bottom 60%"
+          containerClassName="my-0 max-w-3xl"
+          textClassName="text-4xl leading-[1.02] font-bold tracking-[-0.035em] md:text-6xl"
+        >
+          {t.projectsTitle}
+        </ScrollReveal>
         </Reveal>
         <Reveal delay={0.07}>
           <p className="mt-5 max-w-xl text-lg leading-relaxed text-muted-foreground">{t.projectsLead}</p>
         </Reveal>
 
-        <div className="mt-12 grid grid-cols-1 gap-4 lg:grid-cols-12 lg:grid-rows-[auto_auto]">
-          <Reveal delay={0.1} className="lg:col-span-7 lg:row-span-2">
-            <ProjectTile project={lead} href={`${projectsHref}#${slugify(lead.name)}`} t={t} large />
-          </Reveal>
-          {rest.map((project, i) => (
-            <Reveal key={project.name} delay={0.16 + i * 0.07} className="lg:col-span-5">
-              <ProjectTile project={project} href={`${projectsHref}#${slugify(project.name)}`} t={t} />
-            </Reveal>
+        {/* Pilha de projetos: cada card gruda e o seguinte desliza por cima */}
+        <div className="mt-12 flex flex-col gap-6 lg:gap-10">
+          {featured.map((project, i) => (
+            <ProjectCard
+              key={project.name}
+              project={project}
+              href={`${projectsHref}#${slugify(project.name)}`}
+              t={t}
+              index={i}
+            />
           ))}
-          <Reveal delay={0.2} className="lg:col-span-12">
+        </div>
+
+        <div className="mt-6 lg:mt-10">
+          <Reveal>
             <Link
               to={projectsHref}
               className="group flex flex-col gap-4 rounded-[var(--radius-panel)] bg-primary p-7 text-primary-foreground transition-[transform,background-color] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-primary-hover active:scale-[0.99] md:flex-row md:items-center md:justify-between md:p-10"
@@ -231,9 +311,12 @@ export default function Home() {
                 </span>
                 <span className="mt-2 block text-base text-primary-foreground/75">{t.projectsAllHint}</span>
               </span>
-              <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-primary-foreground text-primary transition-transform duration-500 group-hover:translate-x-1">
-                <ArrowRight className="size-6" weight="bold" aria-hidden="true" />
-              </span>
+              {/* React Bits Magnet: a seta é atraída pelo cursor quando ele chega perto */}
+              <Magnet padding={70} magnetStrength={3} wrapperClassName="shrink-0">
+                <span className="flex size-14 items-center justify-center rounded-full bg-primary-foreground text-primary">
+                  <ArrowRight className="size-6" weight="bold" aria-hidden="true" />
+                </span>
+              </Magnet>
             </Link>
           </Reveal>
         </div>
@@ -243,9 +326,17 @@ export default function Home() {
       <section aria-labelledby="tools-heading" className="mt-32 grid grid-cols-1 gap-12 md:mt-44 lg:grid-cols-12 lg:gap-10">
         <div className="lg:col-span-5">
           <Reveal>
-            <h2 id="tools-heading" className="text-4xl leading-[1.02] font-bold tracking-[-0.035em] md:text-5xl">
-              {t.toolsTitle}
-            </h2>
+          <ScrollReveal
+            id="tools-heading"
+            baseRotation={0}
+            baseOpacity={0.15}
+            blurStrength={6}
+            wordAnimationEnd="bottom 60%"
+            containerClassName="my-0"
+            textClassName="text-4xl leading-[1.02] font-bold tracking-[-0.035em] md:text-5xl"
+          >
+            {t.toolsTitle}
+          </ScrollReveal>
           </Reveal>
           <Reveal delay={0.07}>
             <p className="mt-5 max-w-md text-lg leading-relaxed text-muted-foreground">{t.toolsLead}</p>

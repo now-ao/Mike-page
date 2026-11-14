@@ -3,6 +3,7 @@ import { ArrowLeft, MagnifyingGlass } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { emit } from '@/lib/events';
 import GlassCard from '../components/site/GlassCard';
+import Reveal from '../components/site/Reveal';
 import ScrambleText from '../components/site/ScrambleText';
 import Seo from '../components/Seo';
 import { useLocale } from '../hooks/useLocale';
@@ -45,7 +46,8 @@ export default function NotFound() {
         lang={locale === 'en' ? 'en-US' : 'pt-BR'}
         noindex
       />
-      <GlassCard className="w-full max-w-3xl p-8 md:p-14">
+      <Reveal className="w-full max-w-3xl">
+      <GlassCard className="w-full p-8 md:p-14">
         <p aria-hidden="true" className="font-mono text-[clamp(6rem,20vw,12rem)] leading-none font-bold tracking-[-0.06em] text-primary">
           <ScrambleText text="404" duration={700} />
         </p>
@@ -84,6 +86,7 @@ export default function NotFound() {
           </Button>
         </div>
       </GlassCard>
+      </Reveal>
     </div>
   );
 }
