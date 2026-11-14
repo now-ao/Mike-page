@@ -4,11 +4,12 @@
 ![Vite](https://img.shields.io/badge/Vite_8-B73BFE?style=for-the-badge&logo=vite&logoColor=FFD62E)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_v4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
 ![React Router](https://img.shields.io/badge/React_Router_7-CA4245?style=for-the-badge&logo=react-router&logoColor=white)
-![AWS](https://img.shields.io/badge/AWS_EC2-deployed-222222?style=for-the-badge&logo=amazonaws&logoColor=FF9900)
+![GSAP](https://img.shields.io/badge/GSAP_3-0AE448?style=for-the-badge&logo=greensock&logoColor=white)
+![Nginx](https://img.shields.io/badge/Nginx-VPS-222222?style=for-the-badge&logo=nginx&logoColor=009639)
 
 Um ambiente híbrido que funciona tanto como portfólio pessoal quanto como uma suíte de ferramentas para desenvolvedores (inspirado no modelo 4Devs). Construído com foco em performance, experiência de usuário e processamento local.
 
-O design adota uma estética *Dark/Tech* (Preto e Roxo), com layouts baseados em painéis de controle, grades de engenharia e referências a interfaces de linha de comando (CLI).
+O design adota uma estética *Dark/Tech* (preto e azul), com painéis de vidro, um console interativo no hero e referências a interfaces de linha de comando (CLI). A interface é "montada" na frente do visitante: cursores de agentes trazem cada bloco até o lugar, na abertura da página e conforme a rolagem.
 
 > **🌐 Demo online:** [vinnisantos.com.br](https://vinnisantos.com.br/)
 
@@ -33,8 +34,10 @@ O hub conta com geradores e validadores de dados frequentemente utilizados no de
 * **Bundler:** Vite 8
 * **Estilização:** Tailwind CSS v4 (com design tokens customizados)
 * **Roteamento:** React Router DOM v7 (SPA architecture)
-* **Ícones:** React Icons (FontAwesome, Simple Icons, Tabler)
-* **Deploy:** VM na AWS (EC2) com Nginx servindo o build estático
+* **Animação:** GSAP 3 + ScrollTrigger (`@gsap/react`), Lenis para rolagem suave e Motion em interações pontuais
+* **Componentes animados:** React Bits (`ScrollReveal`, `Magnet`), baixados do registro para `src/components/reactbits`
+* **Ícones:** Phosphor Icons e React Icons (Simple Icons, Tabler, FontAwesome)
+* **Deploy:** VPS com Nginx servindo o build estático
 
 ---
 
@@ -64,21 +67,53 @@ npm run preview    # serve ./dist localmente para teste
 
 ---
 
-## ☁️ Deploy na AWS (EC2 + Nginx)
+## ✨ Animações e rolagem
 
-O site roda numa VM EC2 e é servido diretamente no domínio próprio `vinnisantos.com.br`:
+* **Montagem por agentes:** ao abrir uma página, cursores com nome (`agent·01`…) arrastam as peças da primeira tela até o lugar (`src/components/site/AssembleIntro.jsx`). Ao rolar, cada bloco que entra na tela é colocado da mesma forma (`Reveal.jsx` + `src/lib/agents.js`), com no máximo três cursores por vez; o excedente desliza da lateral.
+* **Rolagem suave:** Lenis sincronizado com o ticker do GSAP (`SmoothScroll.jsx`). Toda rolagem programática (topo, âncoras, paleta de comandos) passa por `src/lib/scroll.js`.
+* **Fundo em camadas:** aurora, trechos de código e símbolos flutuantes em parallax, reagindo à rolagem e ao cursor (`Backdrop.jsx`).
+* **Home:** hero que se afasta ao rolar, projetos em cards empilhados (sticky), esteira da stack que acelera com o scroll e barra de progresso de leitura.
+* **Sobre:** experiência em linha do tempo que se desenha com a rolagem.
+* **Movimento reduzido:** com `prefers-reduced-motion`, nada disso roda e a rolagem fica nativa.
 
-1. `npm run build` gera o estático em `./dist` (base `/`, já que o domínio serve o site na raiz).
-2. O conteúdo de `dist/` é copiado para a VM (ex.: `scp`/`rsync` para o diretório configurado no `root` do Nginx).
-3. O build gera um HTML por rota (`scripts/prerender.mjs`), com o `<head>` de cada página, para buscadores e prévias de link. O Nginx serve esses arquivos e resolve as demais rotas de SPA via `try_files $uri $uri.html /index.html` — ver referência em [`deploy/nginx.conf`](./deploy/nginx.conf).
-4. HTTPS/certificado gerenciado na própria VM (ex.: Certbot), fora do escopo deste repositório.
+Para usar um `Reveal` novo, basta embrulhar o bloco; `RevealGroup` aplica o mesmo a todos os filhos diretos de um contêiner.
+
+---
+
+## ☁️ Deploy (VPS + Nginx)
+
+O site roda numa VPS e é servido pelo Nginx no domínio próprio `vinnisantos.com.br`. Não há deploy automático: o push na `main` não publica nada.
+
+Na VPS, o repositório fica clonado em `/var/www/portifolio/port_vinni` e o `root` do Nginx aponta para a pasta `dist` dentro dele. O build é feito na máquina local e enviado pronto (a VPS não tem `node_modules`):
+
+```bash
+# 1. build local (gera ./dist, com um HTML por rota via scripts/prerender.mjs)
+npm run build
+
+# 2. envia o build para uma pasta temporária na VPS (host configurado em ~/.ssh/config)
+scp -r dist oracle-vps:/var/www/portifolio/port_vinni/dist.new
+
+# 3. na VPS: mantém os assets antigos, guarda o build anterior e troca
+ssh oracle-vps '
+  cd /var/www/portifolio/port_vinni &&
+  cp -n dist/assets/* dist.new/assets/ &&
+  mv dist dist.bak.$(date +%Y%m%d%H%M%S) &&
+  mv dist.new dist &&
+  git pull --ff-only origin main
+'
+```
+
+* **Assets antigos:** os arquivos em `assets/` têm hash no nome e cache de 1 ano. Copiar os antigos para o build novo evita 404 para quem está com uma aba aberta na versão anterior.
+* **Rollback:** cada deploy deixa um `dist.bak.<data>`; para voltar, basta trocar as pastas de novo. Vale apagar os backups antigos de vez em quando.
+* **Rotas:** o Nginx resolve as rotas da SPA com `try_files $uri $uri.html /index.html` — ver referência em [`deploy/nginx.conf`](./deploy/nginx.conf).
+* **HTTPS:** certificado gerenciado na própria VPS pelo Certbot, fora do escopo deste repositório.
 
 ---
 
 ## 🎨 Princípios de Design
 
 * **Hierarquia visual:** títulos com peso/gradiente, separação clara entre seções.
-* **Acessibilidade:** `lang="pt-BR"`, `aria-labels` em botões de ícone, `role="status"` em feedback, contraste mínimo AA em texto muted (`#a1a1aa`).
+* **Acessibilidade:** `lang="pt-BR"`, `aria-labels` em botões de ícone, `role="status"` em feedback, contraste mínimo AA em texto muted e respeito a `prefers-reduced-motion` em todas as animações.
 * **Consistência:** `PageHeader` reutilizável, paleta centralizada em `@theme` do Tailwind v4.
 * **Performance:** CSS purged, JS com tree-shake, preconnect para ViaCEP.
 
